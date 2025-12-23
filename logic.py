@@ -68,57 +68,38 @@ def load_examples_by_rating():
     
 #問題データと回答例、フィードバックを保存
 def save_feedback(question, example_answers, rating):
-    """結果をJSONに保存（最新100件のみ保持する機能をプラス）"""
-    data = []
-    
-    # 1. 読み込み
-    if os.path.exists(HISTORY_FILE):
-        try:
-            with open(HISTORY_FILE, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-        except:
-            data = []
-    
-    # 2. 新しいデータを追加
-    new_entry = {
-        "question": question,
-        "examples": example_answers,
-        "rating": rating,
-        "timestamp": time.time()
-    }
-    data.append(new_entry)
-    
-    # --- ★ここが追加ポイント★ ---
-    # データが100件を超えたら、古いもの（リストの先頭）を削除して100件にする
-    MAX_HISTORY = 100
-    if len(data) > MAX_HISTORY:
-        # 後ろから100個分だけを残す（スライス処理）
-        data = data[-MAX_HISTORY:]
-    # ---------------------------
-    
-    # 3. 保存
-    with open(HISTORY_FILE, 'w', encoding='utf-8') as f:
-        json.dump(data, f, indent=4, ensure_ascii=False)
-    
-    """結果をGoogleスプレッドシートに保存"""
-    
-    # 日時の取得
-    now_str = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    
-    # 保存するデータ（行）
-    row = [now_str, question, rating]
-    
-    # シートに接続して追記
-    sheet = connect_to_sheet()
-    if sheet:
-        try:
-            sheet.append_row(row)
-            print(f"スプレッドシートに保存しました: {row}")
-            return True
-        except Exception as e:
-            st.error(f"書き込みエラー: {e}")
+    """
+    結果をGoogleスプレッドシートのみに保存する
+    （ローカルのJSON保存機能は削除済み）
+    """
+    try:
+        # 1. シートに接続
+        sheet = connect_to_sheet()
+        
+        # シートが見つからなかった場合（接続エラーなど）
+        if not sheet:
+            st.error("エラー: スプレッドシートに接続できませんでした。")
             return False
-    return False
+
+        # 2. 現在時刻を取得
+        now_str = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        
+        # 3. 保存するデータを作成
+        # [日時, お題, 評価] の順
+        row = [now_str, question, rating]
+        
+        # 4. 書き込み実行
+        sheet.append_row(row)
+        
+        # 成功ログ（Manage appの黒い画面で見れる用）
+        print(f"Spreadsheet saved: {row}")
+        
+        return True
+
+    except Exception as e:
+        # エラーが起きたら画面に表示して知らせる
+        st.error(f"スプレッドシート書き込み中にエラーが発生しました: {e}")
+        return False
 
 #googleの自動音声を再生
 def generate_voice(text, filename="question_voice.mp3"):
@@ -279,3 +260,4 @@ def load_css():
     with open("style.css", "r",encoding='utf-8') as f:
 
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)                   
+
