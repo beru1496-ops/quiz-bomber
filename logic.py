@@ -12,10 +12,14 @@ from streamlit_autorefresh import st_autorefresh
 from tenacity import retry, stop_after_attempt, wait_fixed
 from gtts import gTTS
 import uuid
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+import datetime
 
 # --- 設定 ---
 DEFAULT_TIME_LIMIT = 60
 HISTORY_FILE = "quiz_history.json"
+SCOPE = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
 
 #AIとテキストでやり取り
 def clean_json_text(text):
@@ -23,6 +27,22 @@ def clean_json_text(text):
     text = re.sub(r'^```\s*', '', text)
     text = re.sub(r'\s*```$', '', text)
     return text.strip()
+
+def connect_to_sheet():
+    """Secretsから認証情報を読み込んでシートに接続"""
+    try:
+        # st.secrets["gcp_service_account"] の辞書データをそのまま使う
+        creds_dict = dict(st.secrets["gcp_service_account"])
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, SCOPE)
+        client = gspread.authorize(creds)
+        
+        # シート名 または URL で開く
+        # 名前で開く場合: 分かりやすい名前にしておいてください
+        sheet = client.open("quiz_feedback").sheet1 
+        return sheet
+    except Exception as e:
+        st.error(f"スプレッドシート接続エラー: {e}")
+        return None
 
 #蓄積された過去のデータからAIにいくつか渡すため抽出
 def load_examples_by_rating():
@@ -80,7 +100,25 @@ def save_feedback(question, example_answers, rating):
     with open(HISTORY_FILE, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
     
-    print(f">> 現在のデータ件数: {len(data)}件")
+    """結果をGoogleスプレッドシートに保存"""
+    
+    # 日時の取得
+    now_str = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    
+    # 保存するデータ（行）
+    row = [now_str, question, rating]
+    
+    # シートに接続して追記
+    sheet = connect_to_sheet()
+    if sheet:
+        try:
+            sheet.append_row(row)
+            print(f"スプレッドシートに保存しました: {row}")
+            return True
+        except Exception as e:
+            st.error(f"書き込みエラー: {e}")
+            return False
+    return False
 
 #googleの自動音声を再生
 def generate_voice(text, filename="question_voice.mp3"):
@@ -95,6 +133,7 @@ def generate_voice(text, filename="question_voice.mp3"):
     except Exception as e:
         st.error(f"音声生成エラー: {e}")
         return False
+        
 
 #AIを使っての問題と正解例の生成
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(1))
@@ -238,4 +277,5 @@ def play_sound(file_path, visible=False):
 
 def load_css():
     with open("style.css", "r",encoding='utf-8') as f:
+
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)                   
