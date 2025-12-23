@@ -1,0 +1,87 @@
+.stApp { background-color: #1E1E1E; color: #FFFFFF; }
+        .stTextInput > div > div > input { background-color: #333333; color: #FFFFFF; caret-color: #FFFFFF; }
+        .stTextInput label { color: #FFFFFF !important; }
+        
+        /* ボタンのデザイン */
+        .stButton > button {
+            color: #FFFFFF !important; background-color: #FF4B4B !important;
+            border: 1px solid #FF4B4B !important; border-radius: 8px !important; font-weight: bold !important;
+        }
+        .stButton > button:hover { background-color: #D32F2F !important; border-color: #D32F2F !important; }
+
+        /* --- ★ここから追加・変更エリア --- */
+
+        /* 1. 通常時のタイマー */
+        .timer-normal {
+            font-family: 'Arial Black', sans-serif; 
+            font-size: 80px; 
+            font-weight: bold;
+            color: #FFFFFF; /* 通常は白 */
+            text-align: center; 
+            line-height: 1.0; 
+            margin-top: 10px; 
+            text-shadow: 2px 2px 4px #000000;
+        }
+
+        /* 2. ピンチ時のアニメーション定義（赤く点滅 + ドクンドクンと拡大） */
+        @keyframes heartbeat {
+            0% { transform: scale(1); color: #FF4B4B; }
+            50% { transform: scale(1.1); color: #FF0000; text-shadow: 0 0 20px #FF0000; }
+            100% { transform: scale(1); color: #FF4B4B; }
+        }
+
+        /* 3. ピンチ時のタイマークラス */
+        .timer-urgent {
+            font-family: 'Arial Black', sans-serif; 
+            font-size: 90px; /* 少し大きく */
+            font-weight: bold;
+            color: #FF4B4B;
+            text-align: center; 
+            line-height: 1.0; 
+            margin-top: 10px; 
+            text-shadow: 2px 2px 4px #000000;
+            animation: heartbeat 0.5s infinite; /* 0.5秒間隔で無限ループ */
+        }
+
+        /* 4. 回答スロット（横並びの箱） */
+        .slot-container {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 10px !important;
+            margin-top: 10px;
+        }
+        .answer-slot {
+            width: 18%; /* 5つ並べるので適度な幅 */
+            height: 60px;
+            background-color: #444;
+            border: 2px solid #777;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            color: #FFF;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+            transition: all 0.3s;
+        }
+        /* 正解が入った時のスタイル */
+        .slot-filled {
+            background-color: #FFC107; /* 黄色 */
+            color: #000;
+            border-color: #FFF;
+            transform: scale(1.05); /* 少し大きく */
+            box-shadow: 0 0 10px #FFC107;
+        }        
+       /* ヒントエリアの余白調整 */
+        .hint-row {
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+        }
+        .question-text { 
+        font-size: 24px; 
+        font-weight: bold; 
+        margin-bottom: 20px; /* お題とスロットの間は少し空ける */
+        }
