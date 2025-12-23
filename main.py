@@ -164,7 +164,7 @@ def main():
             # --- 【左】爆弾画像 ---
             with col_bomb_visual:
                 if remaining <= 15:
-                    bomb_img = "bomb_danger.png"
+                    bomb_img = "bomb_danger2.png"
                     timer_class = "timer-urgent"
                 else:
                     bomb_img = "bomb_normal.png"
@@ -372,4 +372,5 @@ def main():
             st.rerun()
         
 if __name__ == "__main__":
+
     main()        
