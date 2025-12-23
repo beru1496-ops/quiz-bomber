@@ -3,3 +3,5 @@ google-genai
 streamlit-autorefresh
 tenacity
 gtts
+gspread
+oauth2client
