@@ -86,7 +86,7 @@ def save_feedback(question, example_answers, rating):
         
         # 3. 保存するデータを作成
         # [日時, お題, 評価] の順
-        row = [now_str, question, rating]
+        row = [now_str, question, example_answers, rating]
         
         # 4. 書き込み実行
         sheet.append_row(row)
@@ -260,4 +260,5 @@ def load_css():
     with open("style.css", "r",encoding='utf-8') as f:
 
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)                   
+
 
